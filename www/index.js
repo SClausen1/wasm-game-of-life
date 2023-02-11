@@ -9,13 +9,62 @@ const canvas = document.getElementById("game-of-life-canvas")
 const universe = Universe.new()
 const width = universe.width()
 const height = universe.height()
-
+const ctx = canvas.getContext("2d")
+let animationId = null
+// let ticksPerRender = 1
 
 canvas.height = (CELL_SIZE + 1) * height + 1;
 canvas.width = (CELL_SIZE + 1) * width + 1;
 
-const ctx = canvas.getContext("2d")
+const playPauseButton = document.getElementById("play-pause");
 
+// const tickSlider = document.getElementById("tick-slider")
+
+const play = () => {
+    playPauseButton.textContent = "⏸";
+    renderLoop()
+}
+
+const pause = () => {
+    playPauseButton.textContent = "▶";
+    cancelAnimationFrame(animationId);
+    animationId = null;
+}
+
+const isPaused = () => {
+    return animationId === null
+}
+
+playPauseButton.addEventListener("click", event => {
+    if (isPaused()) {
+        play()
+    }
+    else {
+        pause()
+    }
+})
+// tickSlider.addEventListener("input" , event => {
+//     ticksPerRender = event.currentTarget.value ? 1 : 1
+// })
+
+canvas.addEventListener("click", event => {
+    const boundingRect = canvas.getBoundingClientRect()
+
+    const scaleX = canvas.width / boundingRect.width
+    const scaleY = canvas.height / boundingRect.height
+
+
+    const clickX =( event.clientX - boundingRect.left) * scaleX
+    const clickY =( event.clientY - boundingRect.top) * scaleY
+
+    const column = Math.min(Math.floor(clickX / (CELL_SIZE + 1)), width - 1)
+    const row = Math.min(Math.floor(clickY / (CELL_SIZE + 1), height - 1));
+
+    universe.toggle_cell(row, column)
+
+    drawGrid()
+    drawCells()
+})
 
 const drawGrid = () => {
     ctx.beginPath()
@@ -38,7 +87,7 @@ const drawGrid = () => {
 
 const getIndex = (row, column) => {
     return row * width + column;
-  }
+}
 
 
 const drawCells = () => {
@@ -67,15 +116,19 @@ const drawCells = () => {
     ctx.stroke();
 }
 
+
 const renderLoop = () => {
+    // for(let i = 0; i < ticksPerRender; i++){
+        
+    // }
     universe.tick()
 
     drawGrid()
     drawCells()
 
-    requestAnimationFrame(renderLoop)
+    animationId = requestAnimationFrame(renderLoop)
 }
 
 drawGrid();
 drawCells();
-requestAnimationFrame(renderLoop);
+play();

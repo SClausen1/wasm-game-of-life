@@ -1,7 +1,17 @@
 mod utils;
-extern crate js_sys;
+
 use std::fmt;
 use wasm_bindgen::prelude::*;
+
+extern crate js_sys;
+extern crate web_sys;
+
+// A macro to provide `println!(..)`-style syntax for `console.log` logging.
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
 
 impl fmt::Display for Universe {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -31,6 +41,16 @@ pub enum Cell {
     Alive = 1,
 }
 
+impl Cell {
+    pub fn toggle(&mut self) {
+        *self = match *self {
+            Cell::Dead => Cell::Alive,
+          
+            Cell::Alive => Cell::Dead,
+        };
+    }
+}
+
 #[wasm_bindgen]
 pub struct Universe {
     width: u32,
@@ -42,6 +62,7 @@ pub struct Universe {
 #[wasm_bindgen]
 impl Universe {
     pub fn new() -> Universe {
+        utils::set_panic_hook();
         let width = 64;
         let height = 64;
 
@@ -113,6 +134,7 @@ impl Universe {
                 next[index] = next_cell;
             }
         }
+        // log!("Next cells are {:?}", next);
         self.cells = next;
     }
 
@@ -126,5 +148,34 @@ impl Universe {
 
     pub fn cells(&self) -> *const Cell {
         self.cells.as_ptr()
+    }
+
+    pub fn set_width(&mut self, width: u32) {
+        self.width = width;
+        self.cells = (0..width * self.height).map(|_i| Cell::Dead).collect();
+    }
+
+    pub fn set_height(&mut self, height: u32) {
+        self.height = height;
+        self.cells = (0..self.width * height).map(|_i| Cell::Dead).collect();
+    }
+
+    pub fn toggle_cell(&mut self, row: u32, column: u32) {
+        let idx = self.get_index(row, column);
+        log!("toggle cell called with row {:?}", idx);
+        self.cells[idx].toggle();
+        
+    }
+}
+
+impl Universe {
+    pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
+        for (row, column) in cells.iter().cloned() {
+            let idx = self.get_index(row, column);
+            self.cells[idx] = Cell::Alive
+        }
+    }
+    pub fn get_cells(&self) -> &[Cell] {
+        &self.cells
     }
 }
