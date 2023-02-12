@@ -17,13 +17,20 @@
       justify-content: center;
     }
   </style>
-  
+
 </head>
 
 <body>
-  <button style="height: 2em; width: 6em; margin: 8px;" id="play-pause"></button>
-  <!-- <input max="32" min="1" value="1" type="range" id="tick-slider"></input> -->
+  <div id="fps" style="white-space: pre; font-family: monospace; background-color: antiquewhite; padding: .5em; border-radius: .5em; margin-bottom: 1em;"></div>
   <canvas id="game-of-life-canvas"></canvas>
+  <div style="display: flex; flex-direction: row; align-items: center;">
+
+    <button style="height: 2em; width: 6em; margin: 8px;" id="play-pause"></button>
+    <button style="height: 3em; width: 6em; margin: 8px; background-color: crimson; color: aliceblue;"
+      id="reset-universe">Reset Universe</button>
+  </div>
+  <div id="tick-slider-text" >Number of generations per tick: 1</div>
+  <input max="128" min="1" value="1" type="range" id="tick-slider"></input>
   <script src="./bootstrap.js"></script>
 </body>
 
